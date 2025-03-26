@@ -1,0 +1,74 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus
+  namespace: monitoring
+  labels:
+    prometheus: prometheus
+spec:
+  externalUrl: http://monitoring.my.systems/prometheus
+  version: v2.43.1
+  serviceAccountName: prometheus
+  podMonitorSelector: {}
+  podMonitorNamespaceSelector: {}
+  serviceMonitorSelector: {}
+  serviceMonitorNamespaceSelector: {}
+  alerting:
+    alertmanagers:
+      - name: alertmanager-main
+        namespace: monitoring
+        port: web
+  ruleSelector:
+    matchLabels:
+      app: thanos-rules
+  ruleNamespaceSelector: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 2Gi
+  replicas: 1
+  logLevel: info
+  logFormat: logfmt
+  retention: 6h
+  scrapeInterval: 15s
+  externalLabels:
+    cluster: "workload-1"
+  securityContext:
+    fsGroup: 0
+    runAsNonRoot: false
+    runAsUser: 0
+  storage:
+    volumeClaimTemplate:
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: "manual"
+        resources:
+          requests:
+            storage: 4Gi
+  ## TODO later .. add external labels ##
+
+  # Thanos Sidecar
+  thanos:
+    version: v0.34.1
+    # objectStorageConfig:
+    #   name: objstore
+    #   key: objstore.yml
+    # START: Mutual TLS
+  #   grpcServerTlsConfig:
+  #     caFile: /certs/ca.crt
+  #     certFile: /certs/tls.crt
+  #     keyFile: /certs/tls.key
+  # containers:
+  #   - name: thanos-sidecar
+  #     volumeMounts:
+  #       - name: sidecar-crt-tls
+  #         mountPath: /certs
+  # volumes:
+  #   - name: sidecar-crt-tls
+  #     secret:
+  #       secretName: sidecar-tls-new
+  # END: Mutual TLS

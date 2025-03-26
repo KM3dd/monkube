@@ -1,0 +1,88 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: monitoring
+  name: querier
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: querier
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: querier
+    spec:
+      serviceAccount: thanos
+      # hostAliases:
+      #   - ip: "10.1.0.9"
+      #     hostnames:
+      #       - "khaled.monitoring.onesource.pt"
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+        - name: querier
+          image: docker.io/bitnami/thanos:0.34.1
+          args:
+            - query
+            - --log.level=info
+            - --endpoint.info-timeout=30s
+            - --grpc-address=0.0.0.0:10901
+            - --http-address=0.0.0.0:10902
+            - --query.replica-label=prometheus_replica
+            # - --grpc-client-tls-secure
+            # - --grpc-client-tls-skip-verify
+            # - --grpc-client-tls-cert=/certs/tls.crt
+            # - --grpc-client-tls-key=/certs/tls.key
+            # - --grpc-client-tls-ca=/certs/ca.crt
+            # - --endpoint=dnssrv+_grpc._tcp.khaled.monitoring.onesource.pt
+            - --store.sd-files=thanos/sdfile.yaml
+            - --store.sd-interval=3s
+            # - --endpoint=khaled.monitoring.svc.cluster.local:10901
+            # - --endpoint=172.18.0.4:10901
+
+            # - --endpoint= khaled.monitoring.svc.cluster
+          ports:
+            - name: http
+              containerPort: 10902
+              protocol: TCP
+            - name: grpc
+              containerPort: 10901
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 6
+            httpGet:
+              path: /-/healthy
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 30
+          readinessProbe:
+            failureThreshold: 6
+            httpGet:
+              path: /-/ready
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 30
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 2Gi
+          volumeMounts:
+            - name: sdfile
+              mountPath: thanos
+              readOnly: true
+      volumes:
+        - name: sdfile
+          configMap:
+            name: thanos-cm
