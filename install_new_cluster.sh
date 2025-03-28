@@ -34,9 +34,6 @@ echo "[4] Installing Prometheus server ..."
 #### modifying external labels prometheus #### 
 yq eval ".spec.externalLabels.cluster = \"$CLUSTER_NAME\"" -i monitoring-setup/prometheus/prometheus.yaml
 
-#### modifying external labels prometheus #### 
-yq eval ".spec.rules[0].host = \"$INGRESS_URL\"" -i monitoring-setup/prometheus/sidecar-ingress.yaml
-
 kubectl --kubeconfig=$KUBECONFIG apply -R -f monitoring-setup/prometheus/
 # kubectl wait --for=condition=Ready pods -l  app.kubernetes.io/name=prometheus-operator -n
 echo "[5] isntalling metallb ..."
@@ -67,19 +64,6 @@ export KUBECONFIG="./management.kubeconfig"
 
 kubectl --kubeconfig=$KUBECONFIG -n monitoring apply -f $THANOS_QUERY_CONF
 
-#kubectl --kubeconfig=$KUBECONFIG -n monitoring rollout status deployment prometheus-deployment
-
-# echo "[6] Restarting MetalLB..."
-
-# while ! check_services_ip; do
-
-# kubectl --kubeconfig=$KUBECONFIG -n metallb-system rollout restart deployment controller
-# kubectl --kubeconfig=$KUBECONFIG -n metallb-system rollout status deployment controller
-# kubectl --kubeconfig=$KUBECONFIG -n metallb-system rollout restart daemonset speaker
-# kubectl --kubeconfig=$KUBECONFIG -n metallb-system rollout status daemonset speaker
-
-sleep 5
-echo "LOOPING"
 
 
 #kubectl --kubeconfig=$KUBECONFIG apply -f ./prometheus/kube-state-metrics-configs/
