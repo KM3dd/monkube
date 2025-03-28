@@ -1,9 +1,13 @@
 # monkube
-A simple setup for multi k8s cluster monitoring using KinD, Thanos and prometheus 
+This repo is for learning purpouses, it allows you to setup a multicluster monitoring system with thanos, it follows a pull-based approach where the central component collects data from agents in different clusters when needed. This ensures real-time access and simplifies maintenance and scalability
 
+## Architecture : 
+
+![Thanos-prometheus architecture](Architecture_detailed(1).png)
+The Prometheus instances in all the clusters are managed by Prometheus Operator for easier management and service discovery.
 ## Monitoring Setup
 
-### 1. Install maanagement cluster with thanos :
+### 1. Install management cluster with thanos :
 
 - Run `sudo chmod +x ./create-management-cluster.sh`
 - Run `./create-management-cluster.sh [NAME]`
