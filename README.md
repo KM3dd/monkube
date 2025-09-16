@@ -11,7 +11,9 @@ The Prometheus instances in all the clusters are managed by Prometheus Operator 
 ## 🛠️ Quick Start Guide
 
 ### Prerequisites
-- KinD v
+- KinD v0.24.0
+- Python latest
+- yq latest
 
 ### 1. Management Cluster Setup 🖥️
 
@@ -45,8 +47,8 @@ you can check if the cluster is added by checking logs of thanos querier in the 
 
 - `kubectl port-forward svc/querier -n monitoring 9090:9090`
 
-> **_NOTE:_**  thanos might take some around 1~2 minutes to discover the new cluster
+> **_NOTE:_**  thanos might take around 1~2 minutes to discover the new cluster
 
-- To remove a cluster cluster from thanos target list : `unsubscribe_cluster.py [NAME]`
+- To remove a cluster from thanos target list : `unsubscribe_cluster.py [NAME]`
 
 This project is designed to help users understand multi-cluster monitoring with Thanos and Prometheus Operator while ensuring an efficient and scalable setup. 🚀 
